@@ -4,9 +4,11 @@ October 21, 2012
 `funkcast` is a small program that generates a MIDI file from a
 weather forecast.
 
+Note: this is very early software at the moment, YMMV.
+
 # Usage
 
-Dependencies: BeautifulSoup
+Dependencies: Python, BeautifulSoup.
 
 At the most basic usage, just run the program with a location name,
 such as below, which is used to grab a weather forecast from
