@@ -18,7 +18,7 @@ default parameters.
     $ funkcast "Switzerland/Bern/Lauterbrunnen"
     $ timidity output.mid # or however you play midi files
 
-The location names are of the form <country>/<division>/<location> as
+The location names are of the form `<country>/<division>/<location>` as
 can be seen in URL when browsing YR.no.
 
 Play around with it by specifing rules, such as the following:
