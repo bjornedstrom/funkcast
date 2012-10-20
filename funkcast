@@ -1,0 +1,174 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2012 Björn Edström <be@bjrn.se>
+# See license for details.
+
+from optparse import OptionParser
+import BeautifulSoup
+import os
+import stat
+import sys
+import time
+import urllib2
+
+import MidiFile
+
+
+CACHE_DIRECTORY = '/tmp'
+CACHE_TIME = 3600
+
+
+def download_and_cache(url):
+    cache_name = str(hash(url)) + '.cache'
+    cache_path = os.path.join(CACHE_DIRECTORY, cache_name)
+    try:
+        mtime = os.stat(cache_path).st_mtime
+        if time.time() - mtime < CACHE_TIME:
+            return file(cache_path).read()
+    except OSError:
+        pass
+    data = urllib2.urlopen(url).read()
+    with file(cache_path, 'w') as fileobj:
+        fileobj.write(data)
+    return data
+
+
+def get_yr(url):
+    # TODO (bjorn): Download etc.
+    print "Weather forecast from yr.no, delivered by the"
+    print "Norwegian Meteorological Institute and the NRK"
+    print url
+    xml = download_and_cache(url)
+
+    soup  = BeautifulSoup.BeautifulSoup(xml)
+    forecast_xml = soup.find('forecast').find('tabular')
+    report = []
+    for entry in forecast_xml.findAll('time'):
+        wind_direction = float(dict(entry.find('winddirection').attrs)[u'deg'])
+        wind_speed = float(dict(entry.find('windspeed').attrs)[u'mps'])
+
+        temp = int(dict(entry.find('temperature').attrs)[u'value'])
+        pressure = float(dict(entry.find('pressure').attrs)[u'value'])
+        rain = dict(entry.find('precipitation').attrs)
+        report.append({
+                'wind-direction': wind_direction,
+                'wind-speed': wind_speed,
+                'temperature': temp,
+                'pressure': pressure,
+                'rain': float(rain['value'])
+                })
+    return report
+
+
+def convert(report, idx, data_point, note_descr, absolute=True, invert=False):
+    # to normalize we need the complete report
+    weather = report[idx]
+    value = float(weather[data_point])
+    raw = [entry[data_point] for entry in report]
+    length = max(raw) - min(raw)
+    shifted = value - min(raw)
+    #print raw
+    # normalize data point [0,1]
+    norm = shifted / length
+
+    if data_point == 'wind-direction':
+        if absolute:
+            norm = value / 360.0
+    elif data_point == 'wind-speed': # XXX
+        if absolute:
+            norm = value / 20.0
+    elif data_point == 'temperature': # XXX
+        if absolute:
+            # -20 to 40
+            temp = max(0, value + 20)
+            # 0 to 60
+            norm =  temp / 60.0
+    elif data_point == 'pressure':
+        # world records are low 870 and high 1085.7
+        # standard atmosphere = 1013
+        if absolute:
+            norm = (value - 980) / 1040 # XXX
+            if norm < 0:
+                norm = 0
+            elif norm > 1.0:
+                norm = 1.0
+    if invert:
+        norm = 1.0 - norm
+
+    if note_descr == 'pitch':
+        return int(40 + 12 * norm)
+    if note_descr == 'volume':
+        return int(50 + 50 * norm) # XXX: log
+    if note_descr == 'time':
+        return 0.5 + norm / 2
+    if note_descr == 'duration':
+        return 0.5 + norm / 2
+    return norm
+
+
+def main():
+    # command line parsing
+    parser = OptionParser(usage='usage: %prog [options] RULES LOCATION')
+    parser.add_option("-f", "--file", dest="filename", default='output.mid',
+                      help="write report to FILE [%default]", metavar="FILE")
+    parser.add_option("-t", "--tempo", dest="tempo", default=120, type='int',
+                      help="tempo [%default]", metavar="BEAT")
+
+    (options, args) = parser.parse_args()
+
+    location = args[-1]
+
+    # some defaults
+    rules = {
+        'duration': ('wind-speed', False, False),
+        'volume': ('pressure', False, False),
+        'time': ('temperature', False, True),
+        'pitch': ('wind-direction', True, False)
+    }
+
+    rules_argv = args[:-1]
+    for arg in rules_argv:
+        try:
+            note, point = arg.split('=')
+            invert = point.startswith('-')
+            absolute = point.endswith('*')
+            point = point.strip('-*')
+            rules[note] = (point, absolute, invert)
+        except Exception, e:
+            parser.error('failed to parse rule %r: %s' % (arg, e))
+
+    # get weather data
+    url = 'http://www.yr.no/place/%s/forecast.xml' % (location,)
+
+    # TODO: Add option for hour-by-hour report
+    weather_data = get_yr(url)
+
+    # generate music
+    midi = MidiFile.MIDIFile(1)
+    midi.addTrackName(0, 0, 'Weather Track')
+    midi.addTempo(0, 0, options.tempo)
+    # midi.addProgramChange(0, 10, 0, 35)
+
+    time = 0
+
+    def _convert(i, note):
+        point, absolute, invert = rules[note]
+        return convert(weather_data, i, point, note, absolute=absolute, invert=invert)
+
+    for idx in range(len(weather_data)):
+        pitch = _convert(idx, 'pitch')
+        duration = _convert(idx, 'duration')
+        volume = _convert(idx, 'volume')
+
+        midi.addNote(0, 0, pitch, time, duration, volume)
+
+        time += _convert(idx, 'time')
+
+    binfile = open(options.filename, 'wb')
+    midi.writeFile(binfile)
+    binfile.close()
+
+
+if __name__ == '__main__':
+    main()
