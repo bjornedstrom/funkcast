@@ -4,13 +4,13 @@
 # Copyright (c) 2012 Björn Edström <be@bjrn.se>
 # See license for details.
 
-from optparse import OptionParser
-import BeautifulSoup
 import os
 import stat
 import sys
 import time
 import urllib2
+import optparse
+import xml.etree.ElementTree as elementtree
 
 import MidiFile
 
@@ -72,19 +72,17 @@ def get_yr(url):
     print >> sys.stderr, url
     xml = download_and_cache(url)
 
-    soup  = BeautifulSoup.BeautifulSoup(xml)
-    forecast_xml = soup.find('forecast').find('tabular')
     report = []
-    for entry in forecast_xml.findAll('time'):
-        wind_direction = float(dict(entry.find('winddirection').attrs)[u'deg'])
-        wind_speed = float(dict(entry.find('windspeed').attrs)[u'mps'])
 
-        temp = int(dict(entry.find('temperature').attrs)[u'value'])
-        pressure = float(dict(entry.find('pressure').attrs)[u'value'])
-        rain = dict(entry.find('precipitation').attrs)
+    tree = elementtree.fromstring(xml)
+    for entry in tree.find('forecast').find('tabular'):
 
-        symbol_var = dict(entry.find('symbol').attrs)[u'var']
-
+        wind_direction = float(entry.find('windDirection').attrib['deg'])
+        wind_speed = float(entry.find('windSpeed').attrib['mps'])
+        temp = int(entry.find('temperature').attrib['value'])
+        pressure = float(entry.find('pressure').attrib['value'])
+        rain = entry.find('precipitation').attrib
+        symbol_var = entry.find('symbol').attrib['var']
         symbol = parse_yr_symbol(symbol_var)
 
         report.append({
@@ -156,7 +154,7 @@ def convert(report, idx, data_point, note_descr, absolute=True, invert=False):
 
 def main():
     # command line parsing
-    parser = OptionParser(usage='usage: %prog [options] RULES LOCATION')
+    parser = optparse.OptionParser(usage='usage: %prog [options] RULES LOCATION')
     parser.add_option("-f", "--file", dest="filename", default='output',
                       help="write report to FILE [%default]", metavar="FILE")
     parser.add_option("-t", "--tempo", dest="tempo", default=120, type='int',

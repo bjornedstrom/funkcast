@@ -8,8 +8,6 @@ Note: this is very early software at the moment, YMMV.
 
 # Usage
 
-Dependencies: Python, BeautifulSoup.
-
 At the most basic usage, just run the program with a location name,
 such as below, which is used to grab a weather forecast from
 http://www.yr.no/ and generate the file `output.mid` using some
