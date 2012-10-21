@@ -6,6 +6,7 @@
 
 import optparse
 
+import funkcast.nature as nature
 import funkcast.weather as weather
 import funkcast.MidiFile as MidiFile
 
@@ -15,43 +16,13 @@ def convert(report, idx, data_point, note_descr, absolute=True, invert=False):
     weather = report[idx]
     value = float(weather[data_point])
     raw = [entry[data_point] for entry in report]
-    length = max(raw) - min(raw)
-    shifted = value - min(raw)
-    #print raw
-    # normalize data point [0,1]
-    norm = shifted / length
 
-    if data_point == 'wind-direction':
-        if absolute:
-            norm = value / 360.0
-    elif data_point == 'wind-speed': # XXX
-        if absolute:
-            norm = value / 20.0
-    elif data_point == 'temperature': # XXX
-        if absolute:
-            # -20 to 40
-            temp = max(0, value + 20)
-            # 0 to 60
-            norm =  temp / 60.0
-    elif data_point == 'pressure':
-        # world records are low 870 and high 1085.7
-        # standard atmosphere = 1013
-        if absolute:
-            norm = (value - 980) / 1040 # XXX
-            if norm < 0:
-                norm = 0
-            elif norm > 1.0:
-                norm = 1.0
-    elif data_point == 'cloud-cover':
-        if absolute:
-            norm = value / 3.0
-    elif data_point == 'rain':
-        if absolute:
-            norm = min(1.0, value / 10.0) # XXX
+    norm = nature.normalize(data_point, raw, value, absolute)
 
     if invert:
         norm = 1.0 - norm
 
+    # TODO: Below is MIDI specific and not suited for Lilypond.
     if note_descr == 'pitch':
         return int(40 + 12 * norm)
     if note_descr == 'volume':
