@@ -35,7 +35,7 @@ def parse_rules(options, args):
 
 def main():
     parser = optparse.OptionParser(
-        usage='usage: %prog [options] RULES LOCATION')
+        usage='usage: %prog [options] [RULES] LOCATION')
 
     parser.add_option("-f", "--file", dest="filename",
                       default='output', metavar="FILE",
@@ -53,6 +53,8 @@ def main():
     (options, args) = parser.parse_args()
 
     # Validate some output
+    if not args:
+        parser.error(parser.usage)
     if options.source != 'yr':
         parser.error('supported sources are "yr"')
 
