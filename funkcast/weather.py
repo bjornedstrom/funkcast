@@ -90,6 +90,9 @@ def get_yr(url):
     return report
 
 
-def get_report(location):
-    url = 'http://www.yr.no/place/%s/forecast.xml' % (location,)
+def get_report(location, short=False):
+    if short:
+        url = 'http://www.yr.no/place/%s/forecast_hour_by_hour.xml' % (location,)
+    else:
+        url = 'http://www.yr.no/place/%s/forecast.xml' % (location,)
     return get_yr(url)
