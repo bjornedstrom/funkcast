@@ -13,7 +13,7 @@ such as below, which is used to grab a weather forecast from
 http://www.yr.no/ and generate the file `output.mid` using some
 default parameters.
 
-    $ funkcast "Switzerland/Bern/Lauterbrunnen"
+    $ PYTHONPATH=. bin/funkcast "Switzerland/Bern/Lauterbrunnen"
     $ timidity output.mid # or however you play midi files
 
 The location names are of the form `<country>/<division>/<location>` as
