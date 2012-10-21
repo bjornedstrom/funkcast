@@ -65,10 +65,9 @@ def main():
 
     rules = parse_rules(options, args)
 
-    # TODO: Add option for hour-by-hour report
+    # Get weather forecast
     location = args[-1]
-    short = options.forecast == 'short'
-    weather_data = weather.get_report(location, short)
+    weather_data = weather.get_report(location, options.forecast)
 
     # Get output format and output file
     if options.lilypond:
