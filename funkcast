@@ -110,10 +110,12 @@ def convert(report, idx, data_point, note_descr, absolute=True, invert=False):
 def main():
     # command line parsing
     parser = OptionParser(usage='usage: %prog [options] RULES LOCATION')
-    parser.add_option("-f", "--file", dest="filename", default='output.mid',
+    parser.add_option("-f", "--file", dest="filename", default='output',
                       help="write report to FILE [%default]", metavar="FILE")
     parser.add_option("-t", "--tempo", dest="tempo", default=120, type='int',
                       help="tempo [%default]", metavar="BEAT")
+    parser.add_option("-l", "--lilypond", dest="lilypond", default=False, action='store_true',
+                      help="generate lilypond output")
 
     (options, args) = parser.parse_args()
 
@@ -145,29 +147,34 @@ def main():
     weather_data = get_yr(url)
 
     # generate music
-    midi = MidiFile.MIDIFile(1)
-    midi.addTrackName(0, 0, 'Weather Track')
-    midi.addTempo(0, 0, options.tempo)
-    # midi.addProgramChange(0, 10, 0, 35)
-
-    time = 0
-
     def _convert(i, note):
         point, absolute, invert = rules[note]
         return convert(weather_data, i, point, note, absolute=absolute, invert=invert)
 
-    for idx in range(len(weather_data)):
-        pitch = _convert(idx, 'pitch')
-        duration = _convert(idx, 'duration')
-        volume = _convert(idx, 'volume')
+    # by default, just createa a midi directly
+    if not options.lilypond:
+        midi = MidiFile.MIDIFile(1)
+        midi.addTrackName(0, 0, 'Weather Track')
+        midi.addTempo(0, 0, options.tempo)
+        # midi.addProgramChange(0, 10, 0, 35)
 
-        midi.addNote(0, 0, pitch, time, duration, volume)
+        time = 0
 
-        time += _convert(idx, 'time')
+        for idx in range(len(weather_data)):
+            pitch = _convert(idx, 'pitch')
+            duration = _convert(idx, 'duration')
+            volume = _convert(idx, 'volume')
 
-    binfile = open(options.filename, 'wb')
-    midi.writeFile(binfile)
-    binfile.close()
+            midi.addNote(0, 0, pitch, time, duration, volume)
+
+            time += _convert(idx, 'time')
+
+        binfile = open(options.filename + '.mid', 'wb')
+        midi.writeFile(binfile)
+        binfile.close()
+    # if --lilypond is given, create a score instead
+    else:
+        raise NotImplementedError('not done yet')
 
 
 if __name__ == '__main__':
