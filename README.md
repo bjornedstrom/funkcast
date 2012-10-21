@@ -1,8 +1,8 @@
 # funkcast
 October 21, 2012
 
-`funkcast` is a small program that generates a MIDI file from a
-weather forecast.
+`funkcast` is a small program that generates a MIDI file or Lilypond
+score from a weather forecast.
 
 Note: this is very early software at the moment, YMMV.
 
@@ -37,6 +37,18 @@ Where `{note spec}` is one of "pitch", "duration", "time", "volume"
 and `{weather data}` is one of "wind-speed", "wind-direction",
 "temperature", "pressure". Adding a minus sign inverts the
 value. Adding an asterisk marks the value as absolute.
+
+# Lilypond
+
+By default the program will generate a MIDI file directly. There is
+currently some highly limited support for creating a lilypond score
+(an "ly" file).
+
+    $ funkcast --lilypond ... # by default: output.ly
+    $ lilypond output.ly
+    $ evince output.pdf
+
+![Lilypond output](https://raw.github.com/bjornedstrom/funkcast/master/doc/lilypond.png)
 
 # License and So On
 
