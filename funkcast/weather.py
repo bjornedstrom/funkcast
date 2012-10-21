@@ -12,6 +12,7 @@ import xml.etree.ElementTree as elementtree
 CACHE_DIRECTORY = '/tmp'
 CACHE_TIME = 3600
 
+
 def download_and_cache(url):
     cache_name = str(hash(url)) + '.cache'
     cache_path = os.path.join(CACHE_DIRECTORY, cache_name)
@@ -46,16 +47,14 @@ def parse_yr_symbol(symbol):
     elif snum in (2,):
         # fair
         cloud_cover = 1
-    elif snum in (3,17,5,18,6,7,8,19,20,21):
+    elif snum in (3, 17, 5, 18, 6, 7, 8, 19, 20, 21):
         # partly cloudy
         cloud_cover = 2
     else:
         # cloudy / overcast
         cloud_cover = 3
 
-    return {
-        'cloud-cover': cloud_cover
-        }
+    return {'cloud-cover': cloud_cover}
 
 
 def get_yr(url):
@@ -87,8 +86,7 @@ def get_yr(url):
                 # TODO (bjorn): We have min/max as well
                 'rain': float(rain['value']),
 
-                'cloud-cover': symbol['cloud-cover']
-                })
+                'cloud-cover': symbol['cloud-cover']})
     return report
 
 

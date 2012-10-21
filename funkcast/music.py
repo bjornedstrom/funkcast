@@ -35,7 +35,8 @@ def generate(weather_data, rules, output_format, output, options):
     # generate music
     def _convert(i, note):
         point, absolute, invert = rules[note]
-        return convert(weather_data, i, point, note, absolute=absolute, invert=invert)
+        return convert(weather_data, i, point, note,
+                       absolute=absolute, invert=invert)
 
     # by default, just createa a midi directly
     if output_format == 'midi':

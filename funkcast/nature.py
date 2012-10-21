@@ -11,9 +11,6 @@ value [0.0, 1.0] and a distribution.
 import math
 
 
-# TODO (bjorn): Rename this.
-# TODO (bjorn): Return distribution.
-# TODO (bjorn): Does it make sense to move the invertion step here?
 def normalize(data_type, series, scalar, absolute):
     """Normalize nature data.
 
@@ -23,6 +20,9 @@ def normalize(data_type, series, scalar, absolute):
        scalar: the data point to normalize.
        absolute: true to normalize absolutely.
     """
+    # TODO (bjorn): Rename this.
+    # TODO (bjorn): Return distribution.
+    # TODO (bjorn): Does it make sense to move the invertion step here?
 
     length = max(series) - min(series)
     shifted = scalar - min(series)
@@ -39,7 +39,7 @@ def normalize(data_type, series, scalar, absolute):
             # -20 to 40
             temp = max(0, scalar + 20)
             # 0 to 60
-            norm =  temp / 60.0
+            norm = temp / 60.0
     elif data_type == 'pressure':
         # world records are low 870 and high 1085.7
         # standard atmosphere = 1013
