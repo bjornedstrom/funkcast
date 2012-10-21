@@ -4,8 +4,8 @@
 # See license for details.
 
 """The purpose of this module is to take a weather data point (such as
-air pressure  or wind  direction) and normalize it to a scalar value
-[0.0,1.0] and a distrubution.
+air pressure or wind direction) and normalize/rescale it to a scalar
+value [0.0, 1.0] and a distribution.
 """
 
 import math
@@ -13,6 +13,7 @@ import math
 
 # TODO (bjorn): Rename this.
 # TODO (bjorn): Return distribution.
+# TODO (bjorn): Does it make sense to move the invertion step here?
 def normalize(data_type, series, scalar, absolute):
     """Normalize nature data.
 

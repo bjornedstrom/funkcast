@@ -6,32 +6,32 @@
 
 import optparse
 
-import funkcast.nature as nature
+import funkcast.music as music
 import funkcast.weather as weather
-import funkcast.MidiFile as MidiFile
 
 
-def convert(report, idx, data_point, note_descr, absolute=True, invert=False):
-    # to normalize we need the complete report
-    weather = report[idx]
-    value = float(weather[data_point])
-    raw = [entry[data_point] for entry in report]
+def parse_rules(options, args):
+    """Parse out the rules system as described in the README.
+    """
 
-    norm = nature.normalize(data_point, raw, value, absolute)
-
-    if invert:
-        norm = 1.0 - norm
-
-    # TODO: Below is MIDI specific and not suited for Lilypond.
-    if note_descr == 'pitch':
-        return int(40 + 12 * norm)
-    if note_descr == 'volume':
-        return int(50 + 50 * norm) # XXX: log
-    if note_descr == 'time':
-        return 0.5 + norm / 2
-    if note_descr == 'duration':
-        return 0.5 + norm / 2
-    return norm
+    # some defaults
+    rules = {
+        'duration': ('wind-speed', False, False),
+        'volume': ('pressure', False, False),
+        'time': ('temperature', False, True),
+        'pitch': ('wind-direction', True, False)
+    }
+    rules_argv = args[:-1]
+    for arg in rules_argv:
+        try:
+            note, point = arg.split('=')
+            invert = point.startswith('-')
+            absolute = point.endswith('*')
+            point = point.strip('-*')
+            rules[note] = (point, absolute, invert)
+        except Exception, e:
+            parser.error('failed to parse rule %r: %s' % (arg, e))
+    return rules
 
 
 def main():
@@ -53,97 +53,24 @@ def main():
 
     location = args[-1]
 
-    # some defaults
-    rules = {
-        'duration': ('wind-speed', False, False),
-        'volume': ('pressure', False, False),
-        'time': ('temperature', False, True),
-        'pitch': ('wind-direction', True, False)
-    }
-
-    rules_argv = args[:-1]
-    for arg in rules_argv:
-        try:
-            note, point = arg.split('=')
-            invert = point.startswith('-')
-            absolute = point.endswith('*')
-            point = point.strip('-*')
-            rules[note] = (point, absolute, invert)
-        except Exception, e:
-            parser.error('failed to parse rule %r: %s' % (arg, e))
-
     # TODO: Add option for hour-by-hour report
     weather_data = weather.get_report(location)
 
-    # generate music
-    def _convert(i, note):
-        point, absolute, invert = rules[note]
-        return convert(weather_data, i, point, note, absolute=absolute, invert=invert)
+    rules = parse_rules(options, args)
 
-    # by default, just createa a midi directly
-    if not options.lilypond:
-        midi = MidiFile.MIDIFile(1)
-        midi.addTrackName(0, 0, 'Weather Track')
-        midi.addTempo(0, 0, options.tempo)
-        # midi.addProgramChange(0, 10, 0, 35)
-
-        time = 0
-
-        for idx in range(len(weather_data)):
-            pitch = _convert(idx, 'pitch')
-            duration = _convert(idx, 'duration')
-            volume = _convert(idx, 'volume')
-
-            midi.addNote(0, 0, pitch, time, duration, volume)
-
-            time += _convert(idx, 'time')
-
-        binfile = open(options.filename + '.mid', 'wb')
-        midi.writeFile(binfile)
-        binfile.close()
-    # if --lilypond is given, create a score instead
-    else:
+    # Get output format and output file
+    if options.lilypond:
+        output_format = 'lilypond'
         if options.filename == '-':
-            out = sys.stdout
+            output = sys.stdout
         else:
-            out = file(options.filename + '.ly', 'w')
-        print >> out, r"""
-\version "2.12.3"
-\score {
-  \new Staff <<
-    \new Voice \relative c' {
-      \set midiInstrument = #"flute"
-      \voiceOne
-      \key c \major
-      \time 2/2
-"""
-        time = 0
-        # XXX
-        some_scale = 'a4 ais b c cis4 d dis e f4 fis g gis'.split()
-        for idx in range(len(weather_data)):
-            pitch = _convert(idx, 'pitch')
-            note = some_scale[pitch - 40]
-            print >> out, note,
-        print >> out, r"""
-    }
-  >>
-  \layout { }
-  \midi {
-    \context {
-      \Staff
-      \remove "Staff_performer"
-    }
-    \context {
-      \Voice
-      \consists "Staff_performer"
-    }
-    \context {
-      \Score
-      tempoWholesPerMinute = #(ly:make-moment 72 2)
-    }
-  }
-}
-"""
+            output = file(options.filename + '.ly', 'w')
+    else:
+        output_format = 'midi'
+        output = file(options.filename + '.mid', 'wb')
+
+    # Make music!
+    music.generate(weather_data, rules, output_format, output, options)
 
 
 if __name__ == '__main__':
