@@ -36,9 +36,11 @@ Rules are of the form:
 Where `{note spec}` is one of "pitch", "duration", "time", "volume"
 and `{weather data}` is one of "wind-speed", "wind-direction",
 "temperature", "pressure". Adding a minus sign inverts the
-value. Adding an asterisk marks the value as absolute.
+value. Adding an asterisk marks the value as absolute (meaning the
+value is not normalized against the minimum and maximum value in the
+weather report).
 
-# Lilypond
+## Lilypond
 
 By default the program will generate a MIDI file directly. There is
 currently some highly limited support for creating a lilypond score
