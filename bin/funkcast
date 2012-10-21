@@ -37,18 +37,18 @@ def main():
     parser = optparse.OptionParser(
         usage='usage: %prog [options] [RULES] LOCATION')
 
-    parser.add_option("-f", "--file", dest="filename",
-                      default='output', metavar="FILE",
-                      help="write report to FILE [%default]")
-    parser.add_option("-t", "--tempo", dest="tempo",
-                      default=120, type='int', metavar="BEAT",
-                      help="tempo [%default]")
-    parser.add_option("-l", "--lilypond", dest="lilypond",
+    parser.add_option('-f', '--file', dest='filename',
+                      default='output', metavar='FILE',
+                      help='write report to FILE [%default]')
+    parser.add_option('-t', '--tempo', dest='tempo',
+                      default=120, type='int', metavar='BEAT',
+                      help='tempo [%default]')
+    parser.add_option('-l', '--lilypond', dest='lilypond',
                       default=False, action='store_true',
-                      help="generate lilypond output")
-    parser.add_option("--source", dest="source",
-                      default='yr', metavar="SOURCE",
-                      help="weather forecast source [%default]")
+                      help='generate lilypond output')
+    parser.add_option('--source', dest='source',
+                      default='yr', metavar='SOURCE',
+                      help='weather forecast source [%default]')
 
     (options, args) = parser.parse_args()
 
