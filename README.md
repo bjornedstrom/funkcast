@@ -34,11 +34,38 @@ Rules are of the form:
     {note spec} '=' ['-'] {weather data} ['*']
 
 Where `{note spec}` is one of "pitch", "duration", "time", "volume"
-and `{weather data}` is one of "wind-speed", "wind-direction",
-"temperature", "pressure", "rain", or "cloud-cover". Adding a minus
-sign inverts the value. Adding an asterisk marks the value as absolute
-(meaning the value is not normalized against the minimum and maximum
-value in the weather report).
+and `{weather data}` is described below. Adding a minus sign inverts
+the value. Adding an asterisk marks the value as absolute as described
+below.
+
+## Weather data
+
+`{weather data}` is one of the following:
+
+* `wind-speed` - This is a fun one. It is an obvious "strength" or "tempo" variable (intuitively music during a storm will sound differently than a sunny day with no winds).
+* `wind-direction` - Consider using the wind-direction for music volume or pitch.
+* `temperature` - Consider using absolute values for temperature (see below).
+* `pressure` - Atmospheric pressure.
+* `rain` - Precipitation.
+* `cloud-cover` - Low resolution cloud cover (clear, fair, partial, cloudy).
+
+## Absolute vs. Relative value
+
+By marking `{weather data}` with an asterisk in the end makes the
+value absolute. This is a very important feature!
+
+By default, a weather data point (such as wind speed) will be
+normalized to the other data points in the report. However, this is
+something you may not want.
+
+Consider using temperature for pitch. In this case you probably want
+the absolute temperature, otherwise you will get the same pitch from a
+warm location (the desert) as a cold location (northern Sweden).
+
+Of course, using absolute values has some drawbacks as well, since
+`funkcast` has to do something reasonable both for extreme conditions
+(a full blown storm for example) as well as mild conditions (no
+winds).
 
 ## Lilypond
 
