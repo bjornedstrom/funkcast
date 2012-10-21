@@ -46,7 +46,7 @@ below.
 * `wind-direction` - Consider using the wind-direction for music volume or pitch.
 * `temperature` - Consider using absolute values for temperature (see below).
 * `pressure` - Atmospheric pressure.
-* `rain` - Precipitation.
+* `rain` - Precipitation. Fun for a MIDI drumset channel (not really supported right now, but you can use `timidity -D 0 output.mid`).
 * `cloud-cover` - Low resolution cloud cover (clear, fair, partial, cloudy).
 
 ## Absolute vs. Relative value
