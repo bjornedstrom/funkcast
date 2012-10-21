@@ -136,6 +136,9 @@ def convert(report, idx, data_point, note_descr, absolute=True, invert=False):
     elif data_point == 'cloud-cover':
         if absolute:
             norm = value / 3.0
+    elif data_point == 'rain':
+        if absolute:
+            norm = min(1.0, value / 10.0) # XXX
 
     if invert:
         norm = 1.0 - norm

@@ -35,8 +35,8 @@ Rules are of the form:
 
 Where `{note spec}` is one of "pitch", "duration", "time", "volume"
 and `{weather data}` is one of "wind-speed", "wind-direction",
-"temperature", "pressure" or "cloud-cover". Adding a minus sign
-inverts the value. Adding an asterisk marks the value as absolute
+"temperature", "pressure", "rain", or "cloud-cover". Adding a minus
+sign inverts the value. Adding an asterisk marks the value as absolute
 (meaning the value is not normalized against the minimum and maximum
 value in the weather report).
 
