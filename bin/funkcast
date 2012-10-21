@@ -72,8 +72,13 @@ def main():
                       help="tempo [%default]", metavar="BEAT")
     parser.add_option("-l", "--lilypond", dest="lilypond", default=False, action='store_true',
                       help="generate lilypond output")
+    parser.add_option("--source", dest="source", default='yr',
+                      help="weather forecast source [%default]", metavar="SOURCE")
 
     (options, args) = parser.parse_args()
+
+    if options.source != 'yr':
+        parser.error('supported sources are "yr"')
 
     location = args[-1]
 
