@@ -75,7 +75,7 @@ def generate(weather_data, rules, output_format, output, options):
         some_scale = 'a4 ais b c cis4 d dis e f4 fis g gis'.split()
         for idx in range(len(weather_data)):
             pitch = _convert(idx, 'pitch')
-            note = some_scale[pitch - 40]
+            note = some_scale[(pitch - 40) % len(some_scale)]
             print >> out, note,
         print >> out, r"""
     }
